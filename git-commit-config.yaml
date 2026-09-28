@@ -1,0 +1,4 @@
+repos:
+  - repo: https://github.com/Fyanagui7/OpsTrack_API
+rev: 7.3.0
+hooks:- id: flake8
