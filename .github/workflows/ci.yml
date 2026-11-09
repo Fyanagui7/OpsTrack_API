@@ -1,0 +1,63 @@
+name: OpsTrack API CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: pytest
+
+  docker:
+    name: docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t opstrack-api .
+
+      - name: Run container
+        run: docker run -d -p 8000:8000 --name opstrack-container opstrack-api
+
+      - name: Test status endpoint
+        run: |
+          for i in {1..30}; do
+            if curl --fail http://localhost:8000/status; then
+              echo "Endpoint /status funcionando!"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Erro: endpoint /status não respondeu."
+          docker logs opstrack-container
+          exit 1
+
+      - name: Stop and remove container
+        if: always()
+        run: docker rm -f opstrack-container || true
