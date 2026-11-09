@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+tests/
+.env
+.env.*docker build -t opstrack-api .
